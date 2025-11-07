@@ -7,7 +7,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Ruta principal (para probar que el backend funciona)
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
@@ -15,7 +14,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Ruta para resumir texto
 app.post("/summarize", async (req, res) => {
   try {
     const { text } = req.body;
@@ -31,7 +29,7 @@ app.post("/summarize", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        text: text,
+        text,
         length: "medium",
         format: "paragraph",
         model: "summarize-xlarge"
@@ -39,19 +37,12 @@ app.post("/summarize", async (req, res) => {
     });
 
     const data = await response.json();
-
-    return res.json({ result: data.summary });
+    res.json({ result: data.summary });
 
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Something broke" });
+    console.log(error);
+    res.status(500).json({ error: "Something broke" });
   }
-});
-
-app.listen(PORT, () => {
-  console.log("Servidor corriendo en puerto:", PORT);
-});
-
 });
 
 app.listen(PORT, () => {
