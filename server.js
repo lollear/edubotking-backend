@@ -7,6 +7,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
+// Ruta principal (para probar que el backend funciona)
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
@@ -14,7 +15,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// 🚀 Endpoint para resumir texto con Cohere
+// Ruta para resumir texto
 app.post("/summarize", async (req, res) => {
   try {
     const { text } = req.body;
@@ -38,12 +39,19 @@ app.post("/summarize", async (req, res) => {
     });
 
     const data = await response.json();
-    res.json({ result: data.summary });
+
+    return res.json({ result: data.summary });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something broke" });
+    return res.status(500).json({ error: "Something broke" });
   }
+});
+
+app.listen(PORT, () => {
+  console.log("Servidor corriendo en puerto:", PORT);
+});
+
 });
 
 app.listen(PORT, () => {
