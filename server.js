@@ -12,24 +12,36 @@ app.post("/summarize", async (req, res) => {
   try {
     const { text } = req.body;
 
-    const response = await fetch("https://api.cohere.ai/v1/summarize", {
+    if (!text) return res.status(400).json({ error: "No text provided" });
+
+    const response = await fetch("https://api.cohere.ai/v1/chat", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${COHERE_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        text: text,
-        length: "medium"
+        model: "command-r-plus",
+        messages: [
+          {
+            role: "user",
+            content: `Resume este texto en un párrafo claro y simple:\n\n${text}`
+          }
+        ]
       })
     });
 
     const data = await response.json();
-    return res.json(data);
+
+    return res.json({
+      summary: data.text || data.message || data.output_text || "No summary generated"
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error summarizing text" });
   }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("✅ Server running on port", PORT));
