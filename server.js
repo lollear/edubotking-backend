@@ -8,7 +8,6 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// ✅ Ruta principal
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
@@ -16,7 +15,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// ✅ Nueva ruta correcta para resumir
 app.post("/summarize", async (req, res) => {
   try {
     const { text } = req.body;
@@ -34,19 +32,21 @@ app.post("/summarize", async (req, res) => {
       body: JSON.stringify({
         model: "command-r-plus",
         messages: [
-          { role: "user", content: `Resume el siguiente texto de forma clara y corta:\n\n${text}` }
+          {
+            role: "user",
+            content: `Resume este texto de manera clara y breve:\n\n${text}`
+          }
         ]
       })
     });
 
     const data = await response.json();
-    console.log("COHERE RESPONSE:", data);
+    console.log("COHERE RESPONSE:", JSON.stringify(data, null, 2)); // 👈 Debug para ver respuesta real
 
-    if (!data.text) {
-      return res.json({ summary: "No summary generated." });
-    }
+    // ✅ Nuevo formato correcto
+    let summary = data.message?.content?.[0]?.text || "No summary generated.";
 
-    res.json({ summary: data.text });
+    res.json({ summary });
 
   } catch (error) {
     console.error("ERROR:", error);
@@ -54,7 +54,6 @@ app.post("/summarize", async (req, res) => {
   }
 });
 
-// ✅ Levantar servidor
 app.listen(PORT, () => {
   console.log("Servidor corriendo en puerto:", PORT);
 });
