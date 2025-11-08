@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import fetch from "node-fetch";
 
 const app = express();
 app.use(cors());
@@ -29,22 +30,18 @@ app.post("/summarize", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        text,
+        text: text,
         length: "medium",
-        format: "paragraph",
-        model: "summarize-xlarge"
+        format: "paragraph"
       })
     });
 
     const data = await response.json();
-    res.json({ result: data.summary });
-
+    return res.json({ result: data.summary });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Something broke" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.listen(PORT, () => {
-  console.log("Servidor corriendo en puerto:", PORT);
-});
+app.listen(PORT, () => console.log("Servidor corriendo en puerto:", PORT));
