@@ -22,23 +22,18 @@ app.post("/summarize", async (req, res) => {
       },
       body: JSON.stringify({
         model: "command-r-plus",
-        messages: [
-          {
-            role: "user",
-            content: `Resume este texto en un párrafo claro y simple:\n\n${text}`
-          }
-        ]
+        message: `Resume este texto en un párrafo claro y sencillo:\n\n${text}`
       })
     });
 
     const data = await response.json();
 
     return res.json({
-      summary: data.text || data.message || data.output_text || "No summary generated"
+      summary: data.text || "No summary generated."
     });
 
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Error summarizing text" });
   }
 });
