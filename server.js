@@ -1,59 +1,46 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
+import bodyParser from "body-parser";
+import CohereClient from "cohere-ai";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 3000;
-
-app.get("/", (req, res) => {
-  res.json({
-    status: "ok",
-    message: "EdubotKing Backend Running 🚀"
-  });
+// =======================
+/////  INSERTA TU KEY  ////
+// =======================
+const cohere = new CohereClient({
+  apiKey: 17511zHi9k3mu25rOX7OY9hkJ7LOh4UjCtHS8dgP,
 });
 
-app.post("/summarize", async (req, res) => {
+// Ruta principal para resumir texto
+app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
 
-    if (!text || text.trim().length < 3) {
-      return res.status(400).json({ error: "Text too short to summarize" });
+    if (!text || text.trim() === "") {
+      return res.json({ summary: "No text provided." });
     }
 
-    const response = await fetch("https://api.cohere.com/v1/chat", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.COHERE_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "command-r",
-        message: `Summarize this text in clear English:\n\n${text}`
-      })
+    const response = await cohere.generate({
+      model: "command-r-plus",
+      prompt: `Summarize the following text in clear, concise English:\n\n${text}\n\nSummary:`,
+      max_tokens: 250,
+      temperature: 0.4,
     });
 
-    const data = await response.json();
-    console.log("COHERE RAW:", JSON.stringify(data, null, 2));
+    const summary = response.generations?.[0]?.text?.trim() || "No summary generated.";
 
-    // 🔥 Nueva forma correcta de acceder al texto
-    const summary =
-      data.text ||
-      data.message ||
-      data.response ||
-      data.output ||
-      "No summary generated.";
-
-    return res.json({ summary });
-
+    res.json({ summary });
   } catch (error) {
-    console.error("ERROR:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.error("Error:", error);
+    res.json({ summary: "Error generating summary." });
   }
 });
 
+// Start server
+const PORT = 3000;
 app.listen(PORT, () => {
-  console.log("Servidor corriendo en puerto:", PORT);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });
