@@ -4,12 +4,12 @@ import cohere
 import os
 
 # Cargar API KEY desde variables de entorno
-COHERE_API_KEY = os.getenv("COHERE_API_KEY")
+CO_API_KEY = os.getenv("CO_API_KEY")
 
 if not COHERE_API_KEY:
     raise ValueError("⚠️ Falta la variable de entorno COHERE_API_KEY")
 
-co = cohere.Client(COHERE_API_KEY)
+co = cohere.Client(CO_API_KEY)
 
 app = FastAPI()
 
@@ -39,3 +39,4 @@ async def summarize_text(text: str = Form(...)):
     )
 
     return {"summary": response.summary}
+
