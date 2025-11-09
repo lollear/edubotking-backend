@@ -30,15 +30,28 @@ app.post("/summarize", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "command-r-plus",
+        model: "command-r",
         messages: [
-          {
-            role: "user",
-            content: `Resume este texto de manera clara y breve:\n\n${text}`
-          }
+          { role: "user", content: `Resuma este texto de forma clara y concisa:\n\n${text}` }
         ]
       })
     });
+
+    const data = await response.json();
+
+    // PARA REVISAR LA RESPUESTA DEL MODELO
+    console.log("COHERE RESPONSE:", JSON.stringify(data, null, 2));
+
+    const summary = data.message?.content?.[0]?.text || "No summary generated.";
+
+    res.json({ summary });
+
+  } catch (error) {
+    console.error("ERROR in /summarize:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
     const data = await response.json();
     console.log("COHERE RESPONSE:", JSON.stringify(data, null, 2)); // 👈 Debug para ver respuesta real
