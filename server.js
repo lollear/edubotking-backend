@@ -1,21 +1,20 @@
 import express from "express";
 import cors from "cors";
-import bodyParser from "body-parser";
-import CohereClient from "cohere-ai";
+import { CohereClient } from "cohere-ai";
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 // =======================
-/////  INSERTA TU KEY  ////
+//  INSERTA TU API KEY AQUÍ
 // =======================
 const cohere = new CohereClient({
-  apiKey: 17511zHi9k3mu25rOX7OY9hkJ7LOh4UjCtHS8dgP,
+  apiKey: "17511zHi9k3mu25rOX7OY9hkJ7LOh4UjCtHS8dgP",
 });
 
-// Ruta principal para resumir texto
-app.post("/summary", async (req, res) => {
+// Ruta para resumir texto
+app.post("/summarize", async (req, res) => {
   try {
     const { text } = req.body;
 
@@ -25,23 +24,22 @@ app.post("/summary", async (req, res) => {
 
     const response = await cohere.generate({
       model: "command-r-plus",
-      prompt: `Summarize the following text in clear, concise English:\n\n${text}\n\nSummary:`,
-      max_tokens: 250,
+      prompt: `Summarize the following text in clear Spanish:\n\n${text}\n\nResumen:`,
+      max_tokens: 200,
       temperature: 0.4,
     });
 
     const summary = response.generations?.[0]?.text?.trim() || "No summary generated.";
-
     res.json({ summary });
+
   } catch (error) {
-    console.error("Error:", error);
+    console.error("COHERE ERROR:", error);
     res.json({ summary: "Error generating summary." });
   }
 });
 
-// Start server
+// Run server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
-
