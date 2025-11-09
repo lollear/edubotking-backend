@@ -1,20 +1,24 @@
 import express from "express";
 import cors from "cors";
+import bodyParser from "body-parser";
 import { CohereClient } from "cohere-ai";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// =======================
-//  INSERTA TU API KEY AQUÍ
-// =======================
+// ========= AQUI PONES TU KEY =========
 const cohere = new CohereClient({
-  apiKey: "17511zHi9k3mu25rOX7OY9hkJ7LOh4UjCtHS8dgP",
+  apiKey: process.env.COHERE_API_KEY, 
 });
 
-// Ruta para resumir texto
-app.post("/summarize", async (req, res) => {
+// ✅ Ruta principal (solo para probar que corre)
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
+});
+
+// ✅ Ruta de resumen
+app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
 
@@ -23,23 +27,22 @@ app.post("/summarize", async (req, res) => {
     }
 
     const response = await cohere.generate({
-      model: "command-r-plus",
-      prompt: `Summarize the following text in clear Spanish:\n\n${text}\n\nResumen:`,
-      max_tokens: 200,
+      model: "command",
+      prompt: `Summarize the following text in clear English:\n\n${text}\n\nSummary:`,
+      max_tokens: 250,
       temperature: 0.4,
     });
 
     const summary = response.generations?.[0]?.text?.trim() || "No summary generated.";
     res.json({ summary });
-
   } catch (error) {
-    console.error("COHERE ERROR:", error);
+    console.error("ERROR:", error);
     res.json({ summary: "Error generating summary." });
   }
 });
 
-// Run server
+// ✅ Encender servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log("✅ Server running on port", PORT);
 });
