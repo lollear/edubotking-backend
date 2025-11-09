@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
+import fetch from "node-fetch"; // <- asegura que esto esté instalado
 
 const app = express();
 app.use(cors());
@@ -32,15 +32,14 @@ app.post("/summarize", async (req, res) => {
       body: JSON.stringify({
         model: "command-r",
         messages: [
-          { role: "user", content: `Resuma este texto de forma clara y concisa:\n\n${text}` }
+          { role: "user", content: `Summarize the following text clearly and concisely:\n\n${text}` }
         ]
       })
     });
 
     const data = await response.json();
 
-    // PARA REVISAR LA RESPUESTA DEL MODELO
-    console.log("COHERE RESPONSE:", JSON.stringify(data, null, 2));
+    console.log("COHERE RAW RESPONSE:", JSON.stringify(data, null, 2));
 
     const summary = data.message?.content?.[0]?.text || "No summary generated.";
 
@@ -49,21 +48,6 @@ app.post("/summarize", async (req, res) => {
   } catch (error) {
     console.error("ERROR in /summarize:", error);
     res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-
-    const data = await response.json();
-    console.log("COHERE RESPONSE:", JSON.stringify(data, null, 2)); // 👈 Debug para ver respuesta real
-
-    // ✅ Nuevo formato correcto
-    let summary = data.message?.content?.[0]?.text || "No summary generated.";
-
-    res.json({ summary });
-
-  } catch (error) {
-    console.error("ERROR:", error);
-    res.status(500).json({ error: "Server error" });
   }
 });
 
