@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 const cohere = new CohereClient({
   apiKey: process.env.COHERE_API_KEY,
 });
+console.log("API KEY:", process.env.COHERE_API_KEY ? "✅ Cargada" : "❌ NO Cargada");
 
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
