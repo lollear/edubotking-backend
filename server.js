@@ -1,15 +1,16 @@
-// server.js (Versión CommonJS para V6.x)
+// server.js (Versión CommonJS, ajuste final de constructor)
 
-// Reemplazar todos los 'import' con 'require'
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 // ----------------------------------------------------
 // Importamos el paquete completo como objeto.
 const CoherePackage = require("cohere-ai"); 
-// ASUMIMOS que la clase constructora es la exportación raíz del paquete (el objeto en sí)
-// o está en una propiedad llamada CohereClient. Esta es la última opción viable.
-const CohereClient = CoherePackage.CohereClient || CoherePackage; 
+
+// CORRECCIÓN DEFINITIVA: Intentamos acceder a la clase de la manera más exhaustiva posible.
+// Si el paquete exporta un objeto con una propiedad CohereClient, la usamos.
+// Si el paquete es la clase misma o la tiene en .default, la usamos.
+const CohereClient = CoherePackage.CohereClient || CoherePackage.default || CoherePackage; 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -28,8 +29,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. Initialize Cohere Client (ESTA LÍNEA DEBE FUNCIONAR AHORA)
-const cohere = new CohereClient({
+// 2. Initialize Cohere Client 
+const cohere = new CohereClient({ // Línea 32: Debería funcionar con el constructor correcto
     apiKey: COHERE_KEY, 
 });
 
