@@ -32,7 +32,11 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-// --- Summary Endpoint (CORRECCIÓN FINAL DEFINITIVA) ---
+// server.js
+
+// ... (Todos los imports y la inicialización de cohereClient permanecen igual) ...
+
+// --- Summary Endpoint (VERSIÓN CON COHERE-AI V6.x) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -41,33 +45,27 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // LLAMADA A LA API usando cohere.chat
+    // LLAMADA A LA API usando cohere.chat (para V6.x)
     const response = await cohere.chat({
-      model: "command-r",
-      messages: [
-        { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
-      ]
+      // El modelo 'command-r' no existía en v6.x, ¡usaremos el modelo 'command'!
+      model: "command", 
+      message: `Summarize this text in Spanish:\n\n${text}` // V6.x usa 'message', no 'messages'
     });
 
-    // ACCESO A LA RESPUESTA: Forzamos la sintaxis que tu error solicita.
-    // Aunque la versión 7.7.5 debería usar response.text, el error indica 
-    // que necesita la propiedad 'message'.
-    const summary = response.message.text.trim(); 
+    // ACCESO A LA RESPUESTA: Sintaxis correcta para V6.x
+    // Es response.generations[0].text o response.text. ¡Probaremos el más simple!
+    const summary = response.text ? response.text.trim() : "No text generated."; 
     
-    // Si la línea de arriba se ejecuta sin error, la respuesta se envía aquí.
+    // Si la línea de arriba falla, prueba: const summary = response.generations[0].text.trim();
+    
     return res.json({ summary });
 
   } catch (error) {
-    // Si falla la línea de 'response.message.text', el error es capturado aquí
-    // y enviado al frontend para diagnóstico.
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
-    
-    // Si ves 'Cannot read properties of undefined (reading 'text')', significa 
-    // que 'response.message' es undefined.
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Attempt).", 
+      summary: "Error generating summary (Downgrade Failed).", 
       detail: errorMessage 
     });
   }
