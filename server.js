@@ -32,18 +32,7 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-
-// ... (todo el código de arriba se mantiene igual, incluyendo imports)
-
-// server.js
-
-// ... (Todos los imports y la inicialización de cohereClient permanecen igual) ...
-
-// server.js
-
-// ... (Todos los imports y la inicialización de cohereClient con COHERE_KEY o CO_API_KEY permanecen igual) ...
-
-// --- Summary Endpoint (VERSIÓN FINAL: Usando cohere.chat con sintaxis moderna) ---
+// --- Summary Endpoint (CORRECCIÓN FINAL DEFINITIVA) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -52,7 +41,7 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. LLAMADA A LA API usando cohere.chat (el método actual y correcto)
+    // LLAMADA A LA API usando cohere.chat
     const response = await cohere.chat({
       model: "command-r",
       messages: [
@@ -60,21 +49,25 @@ app.post("/summary", async (req, res) => {
       ]
     });
 
-    // 2. ACCESO A LA RESPUESTA (Usando la sintaxis moderna y correcta: response.text)
-    // ESTA DEBE SER LA SINTAXIS CORRECTA PARA LA SDK ACTUAL DE CHAT
-    const summary = response.text ? response.text.trim() : "No text generated.";
+    // ACCESO A LA RESPUESTA: Forzamos la sintaxis que tu error solicita.
+    // Aunque la versión 7.7.5 debería usar response.text, el error indica 
+    // que necesita la propiedad 'message'.
+    const summary = response.message.text.trim(); 
     
-    // Send the successful response
-    res.json({ summary });
+    // Si la línea de arriba se ejecuta sin error, la respuesta se envía aquí.
+    return res.json({ summary });
 
   } catch (error) {
-    // Manejo de errores que captura si hay fallos futuros
+    // Si falla la línea de 'response.message.text', el error es capturado aquí
+    // y enviado al frontend para diagnóstico.
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
     
+    // Si ves 'Cannot read properties of undefined (reading 'text')', significa 
+    // que 'response.message' es undefined.
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Check).", 
+      summary: "Error generating summary (Final Attempt).", 
       detail: errorMessage 
     });
   }
