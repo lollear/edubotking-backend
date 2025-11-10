@@ -1,30 +1,21 @@
-// server.js (Versión ES Modules compatible con cohere-ai@7.x)
+// server.js (Volvemos a generate() para evitar el error de formateo del chat)
 
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-// ----------------------------------------------------
-// Importación Moderna para cohere-ai V7.x
-import { CohereClient } from "cohere-ai"; 
-// ----------------------------------------------------
+import { CohereClient } from "cohere-ai"; // V7.x
 
-// 1. Get the API Key from environment variables.
+// 1. Get the API Key from environment variables (igual).
 const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
-
-// Fail fast if the key is not available
 if (!COHERE_KEY) {
-    console.error("FATAL ERROR: API Key is missing. Please set either COHERE_API_KEY or CO_API_KEY in Render.");
+    console.error("FATAL ERROR: API Key is missing.");
     process.exit(1); 
 }
 
-// Initialize the Express application
 const app = express();
-
-// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. Initialize Cohere Client 
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
@@ -36,11 +27,8 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-// server.js
 
-// ... (El código anterior permanece igual) ...
-
-// --- Summary Endpoint (CAMBIO DE MODELO) ---
+// --- Summary Endpoint (USANDO GENERATE() - La solución más robusta) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -49,34 +37,33 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. LLAMADA A LA API con el modelo más básico y estable
-    const response = await cohere.chat({
-      model: "command-light", // <--- ¡AQUÍ ESTÁ EL CAMBIO CLAVE!
-      messages: [ 
-        { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
-      ]
+    // LLAMADA A LA API USANDO GENERATE (evitando el error de formato del chat)
+    const response = await cohere.generate({
+      model: "command-light", // Usamos un modelo que sabemos que tu cuenta acepta
+      prompt: `Please summarize the following text in Spanish: ${text}`,
+      maxTokens: 300,
+      temperature: 0.2,
     });
 
-    // 2. ACCESO A LA RESPUESTA
-    const summary = response.text ? response.text.trim() : "No text generated."; 
+    // ACCESO A LA RESPUESTA (generate usa generations[0].text)
+    const summary = response.generations[0].text.trim();
     
     // Send the successful response
     return res.json({ summary });
 
   } catch (error) {
-    // Manejo de errores 
+    // Si obtenemos el error de "Generate API was removed...", sabremos que Cohere lo bloqueó.
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
     
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Check V7 - Model Fail).", 
+      summary: "Error generating summary (Using Generate).", 
       detail: errorMessage 
     });
   }
 });
 
-// ... (El resto del código) ...
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
