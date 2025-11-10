@@ -1,13 +1,13 @@
-// server.js (Usando FETCH para evitar bugs de la librería Cohere-ai)
+// server.js (USANDO FETCH y el endpoint /v1/generate para máxima compatibilidad)
 
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-// ¡Ya no necesitamos importar CohereClient!
+// Ya no necesitamos importar la librería 'cohere-ai'
 
 // ----------------------------------------------------
-// URL del endpoint de CHAT de Cohere (V3)
-const COHERE_API_URL = "https://api.cohere.ai/v1/chat";
+// URL del endpoint de GENERATE de Cohere
+const COHERE_API_URL = "https://api.cohere.ai/v1/generate";
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -35,11 +35,8 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-// server.js
 
-// ... (El código de imports y setup permanece igual, usando FETCH) ...
-
-// --- Summary Endpoint (Ajuste Final: Volviendo a 'message' y rol en minúsculas) ---
+// --- Summary Endpoint (USANDO FETCH Y GENERATE) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -48,22 +45,15 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. DEFINIMOS EL CUERPO JSON (Con 'message' como lo pide el error)
+    // 1. DEFINIMOS EL CUERPO JSON (El formato simple que la API de GENERATE espera)
     const payload = {
-      model: "command", // Probamos un modelo más estándar
-      messages: [ 
-        { 
-          // Cohere es sensible a mayúsculas/minúsculas, usamos minúsculas.
-          role: "user", 
-          // ¡Volvemos a 'message' porque el error lo pide!
-          message: `Summarize the following text in Spanish:\n\n${text}` 
-        } 
-      ],
-      // Otros parámetros útiles (podemos omitirlos si no los necesitamos)
-      // temperature: 0.2,
+      model: "command", 
+      prompt: `Summarize the following text in Spanish: ${text}`, // Usa el campo 'prompt'
+      max_tokens: 300,
+      temperature: 0.2
     };
     
-    // 2. HACEMOS LA SOLICITUD FETCH (igual)
+    // 2. HACEMOS LA SOLICITUD FETCH
     const fetchResponse = await fetch(COHERE_API_URL, {
       method: 'POST',
       headers: {
@@ -79,9 +69,9 @@ app.post("/summary", async (req, res) => {
     if (!fetchResponse.ok) {
         throw new Error(`Cohere API Error: ${data.message || fetchResponse.statusText}`);
     }
-    
-    // 3. ACCESO A LA RESPUESTA
-    const summary = data.text ? data.text.trim() : "No text generated."; 
+
+    // 3. ACCESO A LA RESPUESTA (Generate usa generations[0].text)
+    const summary = data.generations[0].text.trim();
     
     // Send the successful response
     return res.json({ summary });
@@ -93,11 +83,12 @@ app.post("/summary", async (req, res) => {
     console.error("COHERE ERROR:", errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Fetch Attempt 2).", 
+      summary: "Error generating summary (Final Fetch Attempt - Failed).", 
       detail: errorMessage 
     });
   }
 });
+
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
