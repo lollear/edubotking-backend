@@ -1,16 +1,11 @@
-// server.js (Versión CommonJS, ajuste final de constructor)
+// server.js (Versión ES Modules compatible con cohere-ai@7.x)
 
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
 // ----------------------------------------------------
-// Importamos el paquete completo como objeto.
-const CoherePackage = require("cohere-ai"); 
-
-// CORRECCIÓN DEFINITIVA: Intentamos acceder a la clase de la manera más exhaustiva posible.
-// Si el paquete exporta un objeto con una propiedad CohereClient, la usamos.
-// Si el paquete es la clase misma o la tiene en .default, la usamos.
-const CohereClient = CoherePackage.CohereClient || CoherePackage.default || CoherePackage; 
+// Importación Moderna para cohere-ai V7.x
+import { CohereClient } from "cohere-ai"; 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -30,7 +25,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // 2. Initialize Cohere Client 
-const cohere = new CohereClient({ // Línea 32: Debería funcionar con el constructor correcto
+const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
 
@@ -42,7 +37,7 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint (VERSIÓN CON COHERE-AI V6.x) ---
+// --- Summary Endpoint (Sintaxis V7.x - La original que falló por el API key) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -52,13 +47,15 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // LLAMADA A LA API CON SINTAXIS V6.x
+    // LLAMADA A LA API CON SINTAXIS V7.x
     const response = await cohere.chat({
-      model: "command", // Modelo compatible con V6.x 
-      message: `Summarize this text in Spanish:\n\n${text}` // 'message' en singular
+      model: "command-r", // Modelo moderno
+      messages: [ // 'messages' plural y array
+        { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
+      ]
     });
 
-    // ACCESO A LA RESPUESTA: Sintaxis más compatible con V6.x
+    // ACCESO A LA RESPUESTA: Sintaxis moderna y correcta
     const summary = response.text ? response.text.trim() : "No text generated."; 
     
     // Send the successful response
@@ -72,7 +69,7 @@ app.post("/summary", async (req, res) => {
     
     // Send a 500 Internal Server Error response
     res.status(500).json({ 
-      summary: "Error generating summary (Final Attempt).", 
+      summary: "Error generating summary (Reverted to V7).", 
       detail: errorMessage 
     });
   }
