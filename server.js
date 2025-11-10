@@ -1,12 +1,15 @@
-// server.js (Versión CommonJS, compatible con cohere-ai@6.2.0)
+// server.js (Versión CommonJS para V6.x)
 
 // Reemplazar todos los 'import' con 'require'
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 // ----------------------------------------------------
-// Importación de Cohere V6.x usando require (¡Garantizado para CommonJS!)
-const CohereClient = require("cohere-ai"); 
+// Importamos el paquete completo como objeto.
+const CoherePackage = require("cohere-ai"); 
+// ASUMIMOS que la clase constructora es la exportación raíz del paquete (el objeto en sí)
+// o está en una propiedad llamada CohereClient. Esta es la última opción viable.
+const CohereClient = CoherePackage.CohereClient || CoherePackage; 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -25,7 +28,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. Initialize Cohere Client (LA INSTANCIACIÓN DEBE FUNCIONAR AHORA)
+// 2. Initialize Cohere Client (ESTA LÍNEA DEBE FUNCIONAR AHORA)
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
