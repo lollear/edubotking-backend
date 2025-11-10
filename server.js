@@ -39,7 +39,11 @@ app.get("/", (req, res) => {
 
 // ... (Todos los imports y la inicialización de cohereClient permanecen igual) ...
 
-// --- Summary Endpoint (CORREGIDO FINAL: Usando cohere.generate) ---
+// server.js
+
+// ... (Todos los imports y la inicialización de cohereClient con COHERE_KEY o CO_API_KEY permanecen igual) ...
+
+// --- Summary Endpoint (VERSIÓN FINAL: Usando cohere.chat con sintaxis moderna) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -48,36 +52,33 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. LLAMADA A LA API usando cohere.generate (más estable a veces que .chat)
-    const response = await cohere.generate({
-      model: "command-r", // Puedes probar con "command" si "command-r" sigue fallando
-      prompt: `Summarize the following text in Spanish:\n\n${text}`,
-      maxTokens: 300, // Límite de tokens para la respuesta
-      temperature: 0.1, // Baja temperatura para un resumen más preciso
+    // 1. LLAMADA A LA API usando cohere.chat (el método actual y correcto)
+    const response = await cohere.chat({
+      model: "command-r",
+      messages: [
+        { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
+      ]
     });
 
-    // 2. ACCESO A LA RESPUESTA
-    // Para cohere.generate, el texto generado está en response.generations[0].text
-    const summary = response.generations[0].text.trim();
+    // 2. ACCESO A LA RESPUESTA (Usando la sintaxis moderna y correcta: response.text)
+    // ESTA DEBE SER LA SINTAXIS CORRECTA PARA LA SDK ACTUAL DE CHAT
+    const summary = response.text ? response.text.trim() : "No text generated.";
     
     // Send the successful response
     res.json({ summary });
 
   } catch (error) {
-    // Enhanced error handling
+    // Manejo de errores que captura si hay fallos futuros
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
     
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
-    // Send a 500 Internal Server Error response
     res.status(500).json({ 
-      summary: "Error generating summary.", 
-      // Si el error vuelve a ser el de Bearer, aparecerá aquí.
+      summary: "Error generating summary (Final Check).", 
       detail: errorMessage 
     });
   }
 });
-// ... (el resto del código se mantiene igual)
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
