@@ -1,10 +1,10 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import { CohereClient } from "cohere-ai";
+import * as cohereai from "cohere-ai"; // Importa todo como 'cohereai'
 
-// We check for the key you defined (COHERE_API_KEY) or the one Cohere's SDK prefers (CO_API_KEY).
-// You must ensure at least one of these is set in Render.
+const CohereClient = cohereai.CohereClient; // Extrae el cliente de lo importado
+
 const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 
 // Fail fast if the key is not available
@@ -20,14 +20,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize Cohere Client by passing the key explicitly
+// Inicialización del cliente (se mantiene igual, usa CohereClient)
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
-
-console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initialization Error");
-
-
 // --- Root Endpoint ---
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
