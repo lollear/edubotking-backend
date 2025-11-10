@@ -35,22 +35,48 @@ app.get("/", (req, res) => {
 
 // ... (todo el código de arriba se mantiene igual, incluyendo imports)
 
-// --- Summary Endpoint (TEMPORAL) ---
+// server.js
+
+// ... (Todos los imports y la inicialización de cohereClient permanecen igual) ...
+
+// --- Summary Endpoint (CORREGIDO FINAL: Usando cohere.generate) ---
 app.post("/summary", async (req, res) => {
   try {
-    // ESTA ES LA PRUEBA. Devuelve una respuesta fija sin llamar a Cohere.
     const { text } = req.body;
+
+    if (!text || text.trim() === "") {
+      return res.status(400).json({ summary: "Error: No text provided." });
+    }
+
+    // 1. LLAMADA A LA API usando cohere.generate (más estable a veces que .chat)
+    const response = await cohere.generate({
+      model: "command-r", // Puedes probar con "command" si "command-r" sigue fallando
+      prompt: `Summarize the following text in Spanish:\n\n${text}`,
+      maxTokens: 300, // Límite de tokens para la respuesta
+      temperature: 0.1, // Baja temperatura para un resumen más preciso
+    });
+
+    // 2. ACCESO A LA RESPUESTA
+    // Para cohere.generate, el texto generado está en response.generations[0].text
+    const summary = response.generations[0].text.trim();
     
-    // Si esta parte funciona y devuelve el JSON, el problema es SÍ O SÍ la librería cohere.
-    return res.json({ summary: `Test successful: Received ${text.length} characters.` });
+    // Send the successful response
+    res.json({ summary });
 
   } catch (error) {
-    // Si la llamada falla aquí, el problema es Express o Body Parser.
-    console.error("TEST ERROR:", error.message);
-    res.status(500).json({ summary: "Internal Server Test Error" });
+    // Enhanced error handling
+    const errorMessage = error?.message || "Unknown error during Cohere API call.";
+    
+    console.error("COHERE ERROR:", error.response?.data || errorMessage);
+    
+    // Send a 500 Internal Server Error response
+    res.status(500).json({ 
+      summary: "Error generating summary.", 
+      // Si el error vuelve a ser el de Bearer, aparecerá aquí.
+      detail: errorMessage 
+    });
   }
 });
-
 // ... (el resto del código se mantiene igual)
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
