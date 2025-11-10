@@ -33,45 +33,25 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint ---
+// ... (todo el código de arriba se mantiene igual, incluyendo imports)
+
+// --- Summary Endpoint (TEMPORAL) ---
 app.post("/summary", async (req, res) => {
   try {
+    // ESTA ES LA PRUEBA. Devuelve una respuesta fija sin llamar a Cohere.
     const { text } = req.body;
-
-    // Input validation
-    if (!text || text.trim() === "") {
-      return res.status(400).json({ summary: "Error: No text provided." });
-    }
-
-    // Call the Cohere API
-    const response = await cohere.chat({
-      model: "command-r",
-      messages: [
-        { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
-      ]
-    });
-
-    // Extract the summary text
-    // CORRECTED: Access the generated text via 'response.text'
-    const summary = response.text ? response.text.trim() : "No text generated.";
     
-    // Send the successful response
-    res.json({ summary });
+    // Si esta parte funciona y devuelve el JSON, el problema es SÍ O SÍ la librería cohere.
+    return res.json({ summary: `Test successful: Received ${text.length} characters.` });
 
   } catch (error) {
-    // Enhanced error handling
-    const errorMessage = error?.message || "Unknown error during Cohere API call.";
-    
-    console.error("COHERE ERROR:", errorMessage);
-    
-    // Send a 500 Internal Server Error response
-    res.status(500).json({ 
-      summary: "Error generating summary.", 
-      detail: errorMessage 
-    });
+    // Si la llamada falla aquí, el problema es Express o Body Parser.
+    console.error("TEST ERROR:", error.message);
+    res.status(500).json({ summary: "Internal Server Test Error" });
   }
 });
 
+// ... (el resto del código se mantiene igual)
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
