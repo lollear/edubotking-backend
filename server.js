@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const cohere = new CohereClient({
-  token: process.env.COHERE_API_KEY, // ✅ AHORA SÍ COINCIDE
+  apiKey: process.env.COHERE_API_KEY, // <-- ESTE NOMBRE debe ser igual en Render
 });
 console.log("API KEY:", process.env.COHERE_API_KEY ? "✅ Cargada" : "❌ NO Cargada");
 
@@ -25,16 +25,13 @@ app.post("/summary", async (req, res) => {
     }
 
     const response = await cohere.chat({
-      model: "command-r", // ✅ La versión actual recomendada
+      model: "command",
       messages: [
-        {
-          role: "user",
-          content: `Summarize the following text clearly:\n\n${text}`
-        }
+        { role: "user", message: `Summarize the following text clearly:\n\n${text}` }
       ]
     });
 
-    const summary = response.message?.content[0]?.text?.trim() || "No summary generated.";
+    const summary = response?.text?.trim() || "No summary generated.";
     res.json({ summary });
 
   } catch (error) {
