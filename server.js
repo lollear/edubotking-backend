@@ -36,12 +36,11 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-
 // server.js
 
 // ... (El código anterior permanece igual) ...
 
-// --- Summary Endpoint (Sintaxis V7.x - CORRECCIÓN FINAL) ---
+// --- Summary Endpoint (CAMBIO DE MODELO) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -50,30 +49,28 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. LLAMADA A LA API CON SINTAXIS V7.x
+    // 1. LLAMADA A LA API con el modelo más básico y estable
     const response = await cohere.chat({
-      model: "command-r", // Modelo moderno
-      // El array de mensajes es la clave del endpoint de chat
+      model: "command-light", // <--- ¡AQUÍ ESTÁ EL CAMBIO CLAVE!
       messages: [ 
         { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
       ]
-      // Nota: No necesitamos el 'prompt' aquí, solo los 'messages'.
     });
 
-    // 2. ACCESO A LA RESPUESTA: Sintaxis moderna y correcta
+    // 2. ACCESO A LA RESPUESTA
     const summary = response.text ? response.text.trim() : "No text generated."; 
     
     // Send the successful response
     return res.json({ summary });
 
   } catch (error) {
-    // Si la API de Cohere falla, a veces devuelve un error 400 que causa un error 500 local.
+    // Manejo de errores 
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
     
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Check V7).", 
+      summary: "Error generating summary (Final Check V7 - Model Fail).", 
       detail: errorMessage 
     });
   }
