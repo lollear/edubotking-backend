@@ -3,13 +3,13 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { CohereClient } from "cohere-ai";
 
-// 1. STICKT CHECK: Get the API Key from environment variables.
-const COHERE_KEY = process.env.COHERE_API_KEY;
+// We check for the key you defined (COHERE_API_KEY) or the one Cohere's SDK prefers (CO_API_KEY).
+// You must ensure at least one of these is set in Render.
+const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 
 // Fail fast if the key is not available
 if (!COHERE_KEY) {
-    console.error("FATAL ERROR: COHERE_API_KEY is missing. Please set it in your environment (e.g., Render).");
-    // Exits the process if the crucial variable is missing
+    console.error("FATAL ERROR: API Key is missing. Please set either COHERE_API_KEY or CO_API_KEY in Render.");
     process.exit(1); 
 }
 
@@ -20,9 +20,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. INITIALIZATION: Initialize Cohere Client by passing the key directly
+// Initialize Cohere Client by passing the key explicitly
 const cohere = new CohereClient({
-    // Pass the value directly. No quotes needed here.
     apiKey: COHERE_KEY, 
 });
 
@@ -53,7 +52,7 @@ app.post("/summary", async (req, res) => {
     });
 
     // Extract the summary text
-    // CORRECTION: Access the generated text via 'response.text'
+    // CORRECTED: Access the generated text via 'response.text'
     const summary = response.text ? response.text.trim() : "No text generated.";
     
     // Send the successful response
