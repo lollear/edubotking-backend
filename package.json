@@ -8,10 +8,11 @@
   "engines": {
     "node": "18.x"
   },
+  "type": "module", <--- AÑADE ESTA LÍNEA AQUÍ
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "cohere-ai": "^6.2.0",
+    "cohere-ai": "^7.7.5", <--- ASEGÚRATE DE VOLVER A ESTA VERSIÓN
     "body-parser": "^1.20.2"
   }
 }
