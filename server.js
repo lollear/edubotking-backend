@@ -3,6 +3,16 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { CohereClient } from "cohere-ai";
 
+// 1. STICKT CHECK: Get the API Key from environment variables.
+const COHERE_KEY = process.env.COHERE_API_KEY;
+
+// Fail fast if the key is not available
+if (!COHERE_KEY) {
+    console.error("FATAL ERROR: COHERE_API_KEY is missing. Please set it in your environment (e.g., Render).");
+    // Exits the process if the crucial variable is missing
+    process.exit(1); 
+}
+
 // Initialize the Express application
 const app = express();
 
@@ -10,21 +20,21 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Initialize Cohere Client
-// Uses the environment variable COHERE_API_KEY
+// 2. INITIALIZATION: Initialize Cohere Client by passing the key directly
 const cohere = new CohereClient({
-  apiKey: process.env.COHERE_API_KEY, 
+    // Pass the value directly. No quotes needed here.
+    apiKey: COHERE_KEY, 
 });
 
-// Check if the API key is loaded
-console.log("API KEY:", process.env.COHERE_API_KEY ? "✅ Loaded" : "❌ NOT Loaded");
+console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initialization Error");
+
 
 // --- Root Endpoint ---
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint (The corrected part) ---
+// --- Summary Endpoint ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -38,8 +48,6 @@ app.post("/summary", async (req, res) => {
     const response = await cohere.chat({
       model: "command-r",
       messages: [
-        // NOTE: The prompt explicitly asks for the summary "in Spanish" 
-        // as per your requirement ("en el codigo nuesro chat si español")
         { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
       ]
     });
