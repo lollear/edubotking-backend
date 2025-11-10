@@ -1,12 +1,12 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
+// server.js (Versión CommonJS, compatible con cohere-ai@6.2.0)
+
+// Reemplazar todos los 'import' con 'require'
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 // ----------------------------------------------------
-// CORRECCIÓN FINAL DE IMPORTACIÓN para COHERE-AI V6.x (CommonJS)
-// Importamos el paquete completo y asumimos que la clase constructora
-// es el export por defecto (pkg.default) o el objeto raíz (pkg).
-import pkg from 'cohere-ai';
-const CohereClient = pkg.default || pkg; 
+// Importación de Cohere V6.x usando require (¡Garantizado para CommonJS!)
+const CohereClient = require("cohere-ai"); 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -15,7 +15,6 @@ const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 // Fail fast if the key is not available
 if (!COHERE_KEY) {
     console.error("FATAL ERROR: API Key is missing. Please set either COHERE_API_KEY or CO_API_KEY in Render.");
-    // Detiene la aplicación para evitar el error de constructor
     process.exit(1); 
 }
 
@@ -26,7 +25,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. Initialize Cohere Client (AHORA DEBE FUNCIONAR)
+// 2. Initialize Cohere Client (LA INSTANCIACIÓN DEBE FUNCIONAR AHORA)
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
@@ -75,7 +74,7 @@ app.post("/summary", async (req, res) => {
   }
 });
 
-//--- Server Start ---
+// --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
