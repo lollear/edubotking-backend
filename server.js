@@ -1,10 +1,14 @@
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
-import * as cohereai from "cohere-ai"; // Importa todo como 'cohereai'
+// ----------------------------------------------------
+// CORRECCIÓN FINAL DEL IMPORT PARA COHERE-AI V6.x (CommonJS)
+// Importa el paquete completo para acceder a CohereClient.
+import pkg from 'cohere-ai';
+const CohereClient = pkg.CohereClient; 
+// ----------------------------------------------------
 
-const CohereClient = cohereai.CohereClient; // Extrae el cliente de lo importado
-
+// 1. Get the API Key from environment variables.
 const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 
 // Fail fast if the key is not available
@@ -20,52 +24,55 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Inicialización del cliente (se mantiene igual, usa CohereClient)
+// 2. Initialize Cohere Client by passing the key explicitly
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
+
+console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initialization Error");
+
+
 // --- Root Endpoint ---
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-// server.js
-
-// ... (Todos los imports y la inicialización de cohereClient permanecen igual) ...
 
 // --- Summary Endpoint (VERSIÓN CON COHERE-AI V6.x) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
 
+    // Input validation
     if (!text || text.trim() === "") {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // LLAMADA A LA API usando cohere.chat (para V6.x)
+    // LLAMADA A LA API CON SINTAXIS V6.x
     const response = await cohere.chat({
-      // El modelo 'command-r' no existía en v6.x, ¡usaremos el modelo 'command'!
-      model: "command", 
-      message: `Summarize this text in Spanish:\n\n${text}` // V6.x usa 'message', no 'messages'
+      model: "command", // Modelo compatible con V6.x (no 'command-r')
+      message: `Summarize this text in Spanish:\n\n${text}` // 'message' en singular
     });
 
     // ACCESO A LA RESPUESTA: Sintaxis correcta para V6.x
-    // Es response.generations[0].text o response.text. ¡Probaremos el más simple!
     const summary = response.text ? response.text.trim() : "No text generated."; 
     
-    // Si la línea de arriba falla, prueba: const summary = response.generations[0].text.trim();
-    
+    // Send the successful response
     return res.json({ summary });
 
   } catch (error) {
+    // Enhanced error handling
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
+    
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
+    // Send a 500 Internal Server Error response
     res.status(500).json({ 
-      summary: "Error generating summary (Downgrade Failed).", 
+      summary: "Error generating summary (Final Attempt).", 
       detail: errorMessage 
     });
   }
 });
+
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
