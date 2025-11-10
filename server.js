@@ -36,7 +36,11 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint (USANDO FETCH) ---
+// server.js
+
+// ... (El código de imports y setup permanece igual) ...
+
+// --- Summary Endpoint (CORRECCIÓN FINAL: Cambiando 'message' a 'content') ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -45,16 +49,17 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. DEFINIMOS EL CUERPO JSON (EL FORMATO CORRECTO QUE EVITA EL ERROR)
+    // 1. DEFINIMOS EL CUERPO JSON CON LA SINTAXIS API CORRECTA
     const payload = {
-      model: "command-light", // Usamos el modelo estable
+      model: "command-light", 
       messages: [ 
         { 
-          role: "USER", // Roles en mayúsculas a veces son más compatibles
-          message: `Summarize this text in Spanish:\n\n${text}` // Nota: Usamos 'message' en lugar de 'content' por si acaso.
+          role: "USER", 
+          content: `Summarize the following text in Spanish:\n\n${text}` // <--- ¡CAMBIO A 'content'!
         } 
       ],
-      // Forzar que el campo 'message' esté presente en el objeto messages
+      // Nota: Si quieres el summary en la primera llamada, asegúrate de que el último 
+      // rol sea 'USER' y no 'CHATBOT'.
     };
     
     // 2. HACEMOS LA SOLICITUD FETCH
@@ -62,7 +67,6 @@ app.post("/summary", async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // Autenticación Bearer Token (la forma que probamos que funciona)
         'Authorization': `Bearer ${COHERE_KEY}` 
       },
       body: JSON.stringify(payload)
@@ -70,12 +74,13 @@ app.post("/summary", async (req, res) => {
 
     const data = await fetchResponse.json();
 
-    // Manejo de errores de la API (si el status no es 200)
+    // Manejo de errores de la API 
     if (!fetchResponse.ok) {
+        // Mostramos el mensaje de error de Cohere si existe
         throw new Error(`Cohere API Error: ${data.message || fetchResponse.statusText}`);
     }
-
-    // 3. ACCESO A LA RESPUESTA (Directamente del JSON, sin librería SDK)
+    
+    // 3. ACCESO A LA RESPUESTA: El resumen está en el campo 'text' del último response del chatbot.
     const summary = data.text ? data.text.trim() : "No text generated."; 
     
     // Send the successful response
@@ -93,7 +98,6 @@ app.post("/summary", async (req, res) => {
     });
   }
 });
-
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
