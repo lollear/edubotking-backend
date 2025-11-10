@@ -35,12 +35,11 @@ console.log("API KEY:", COHERE_KEY ? "✅ Loaded and Ready" : "❌ Initializatio
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
-
 // server.js
 
-// ... (El código de imports y setup permanece igual) ...
+// ... (El código de imports y setup permanece igual, usando FETCH) ...
 
-// --- Summary Endpoint (CORRECCIÓN FINAL: Cambiando 'message' a 'content') ---
+// --- Summary Endpoint (Ajuste Final: Volviendo a 'message' y rol en minúsculas) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -49,20 +48,22 @@ app.post("/summary", async (req, res) => {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // 1. DEFINIMOS EL CUERPO JSON CON LA SINTAXIS API CORRECTA
+    // 1. DEFINIMOS EL CUERPO JSON (Con 'message' como lo pide el error)
     const payload = {
-      model: "command-light", 
+      model: "command", // Probamos un modelo más estándar
       messages: [ 
         { 
-          role: "USER", 
-          content: `Summarize the following text in Spanish:\n\n${text}` // <--- ¡CAMBIO A 'content'!
+          // Cohere es sensible a mayúsculas/minúsculas, usamos minúsculas.
+          role: "user", 
+          // ¡Volvemos a 'message' porque el error lo pide!
+          message: `Summarize the following text in Spanish:\n\n${text}` 
         } 
       ],
-      // Nota: Si quieres el summary en la primera llamada, asegúrate de que el último 
-      // rol sea 'USER' y no 'CHATBOT'.
+      // Otros parámetros útiles (podemos omitirlos si no los necesitamos)
+      // temperature: 0.2,
     };
     
-    // 2. HACEMOS LA SOLICITUD FETCH
+    // 2. HACEMOS LA SOLICITUD FETCH (igual)
     const fetchResponse = await fetch(COHERE_API_URL, {
       method: 'POST',
       headers: {
@@ -76,11 +77,10 @@ app.post("/summary", async (req, res) => {
 
     // Manejo de errores de la API 
     if (!fetchResponse.ok) {
-        // Mostramos el mensaje de error de Cohere si existe
         throw new Error(`Cohere API Error: ${data.message || fetchResponse.statusText}`);
     }
     
-    // 3. ACCESO A LA RESPUESTA: El resumen está en el campo 'text' del último response del chatbot.
+    // 3. ACCESO A LA RESPUESTA
     const summary = data.text ? data.text.trim() : "No text generated."; 
     
     // Send the successful response
@@ -93,7 +93,7 @@ app.post("/summary", async (req, res) => {
     console.error("COHERE ERROR:", errorMessage);
     
     res.status(500).json({ 
-      summary: "Error generating summary (Final Fetch Attempt).", 
+      summary: "Error generating summary (Final Fetch Attempt 2).", 
       detail: errorMessage 
     });
   }
