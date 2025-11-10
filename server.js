@@ -2,10 +2,11 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 // ----------------------------------------------------
-// CORRECCIÓN FINAL DEL IMPORT PARA COHERE-AI V6.x (CommonJS)
-// Importa el paquete completo para acceder a CohereClient.
+// CORRECCIÓN FINAL DE IMPORTACIÓN para COHERE-AI V6.x (CommonJS)
+// Importamos el paquete completo y asumimos que la clase constructora
+// es el export por defecto (pkg.default) o el objeto raíz (pkg).
 import pkg from 'cohere-ai';
-const CohereClient = pkg.CohereClient; 
+const CohereClient = pkg.default || pkg; 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
@@ -14,6 +15,7 @@ const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 // Fail fast if the key is not available
 if (!COHERE_KEY) {
     console.error("FATAL ERROR: API Key is missing. Please set either COHERE_API_KEY or CO_API_KEY in Render.");
+    // Detiene la aplicación para evitar el error de constructor
     process.exit(1); 
 }
 
@@ -24,7 +26,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// 2. Initialize Cohere Client by passing the key explicitly
+// 2. Initialize Cohere Client (AHORA DEBE FUNCIONAR)
 const cohere = new CohereClient({
     apiKey: COHERE_KEY, 
 });
@@ -49,11 +51,11 @@ app.post("/summary", async (req, res) => {
 
     // LLAMADA A LA API CON SINTAXIS V6.x
     const response = await cohere.chat({
-      model: "command", // Modelo compatible con V6.x (no 'command-r')
+      model: "command", // Modelo compatible con V6.x 
       message: `Summarize this text in Spanish:\n\n${text}` // 'message' en singular
     });
 
-    // ACCESO A LA RESPUESTA: Sintaxis correcta para V6.x
+    // ACCESO A LA RESPUESTA: Sintaxis más compatible con V6.x
     const summary = response.text ? response.text.trim() : "No text generated."; 
     
     // Send the successful response
@@ -74,6 +76,10 @@ app.post("/summary", async (req, res) => {
 });
 
 // --- Server Start ---
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});-- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
