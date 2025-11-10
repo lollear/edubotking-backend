@@ -8,9 +8,9 @@ app.use(cors());
 app.use(bodyParser.json());
 
 const cohere = new CohereClient({
-  apiKey: process.env.CO_API_KEY, // ✅ ESTE ES EL NOMBRE DEFINIDO EN RENDER
+  apiKey: process.env.COHERE_API_KEY, // ✅ ESTE ES EL NOMBRE DEFINIDO EN RENDER
 });
-console.log("API KEY:", process.env.CO_API_KEY ? "✅ Cargada" : "❌ NO Cargada");
+console.log("API KEY:", process.env.COHERE_API_KEY ? "✅ Cargada" : "❌ NO Cargada");
 
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
