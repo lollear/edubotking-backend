@@ -25,21 +25,20 @@ app.post("/summary", async (req, res) => {
     }
 
     const response = await cohere.chat({
-      model: "command",
+      model: "command-r",
       messages: [
-        { role: "user", message: `Summarize the following text clearly:\n\n${text}` }
+        { role: "user", content: `Summarize this text:\n\n${text}` }
       ]
     });
 
-    const summary = response?.text?.trim() || "No summary generated.";
+    const summary = response.message.content[0].text.trim();
     res.json({ summary });
 
   } catch (error) {
-    console.error("COHERE ERROR:", error);
+    console.error("COHERE ERROR:", error?.response?.data || error);
     res.json({ summary: "Error generating summary." });
   }
 });
-
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
