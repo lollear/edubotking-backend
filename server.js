@@ -37,44 +37,49 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint (Sintaxis V7.x - La original que falló por el API key) ---
+// server.js
+
+// ... (El código anterior permanece igual) ...
+
+// --- Summary Endpoint (Sintaxis V7.x - CORRECCIÓN FINAL) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
 
-    // Input validation
     if (!text || text.trim() === "") {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
 
-    // LLAMADA A LA API CON SINTAXIS V7.x
+    // 1. LLAMADA A LA API CON SINTAXIS V7.x
     const response = await cohere.chat({
       model: "command-r", // Modelo moderno
-      messages: [ // 'messages' plural y array
+      // El array de mensajes es la clave del endpoint de chat
+      messages: [ 
         { role: "user", content: `Summarize this text in Spanish:\n\n${text}` } 
       ]
+      // Nota: No necesitamos el 'prompt' aquí, solo los 'messages'.
     });
 
-    // ACCESO A LA RESPUESTA: Sintaxis moderna y correcta
+    // 2. ACCESO A LA RESPUESTA: Sintaxis moderna y correcta
     const summary = response.text ? response.text.trim() : "No text generated."; 
     
     // Send the successful response
     return res.json({ summary });
 
   } catch (error) {
-    // Enhanced error handling
+    // Si la API de Cohere falla, a veces devuelve un error 400 que causa un error 500 local.
     const errorMessage = error?.message || "Unknown error during Cohere API call.";
     
     console.error("COHERE ERROR:", error.response?.data || errorMessage);
     
-    // Send a 500 Internal Server Error response
     res.status(500).json({ 
-      summary: "Error generating summary (Reverted to V7).", 
+      summary: "Error generating summary (Final Check V7).", 
       detail: errorMessage 
     });
   }
 });
 
+// ... (El resto del código) ...
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
