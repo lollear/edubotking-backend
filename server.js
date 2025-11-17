@@ -46,7 +46,7 @@ app.post("/summary", async (req, res) => {
 
     // 1. DEFINIMOS EL CUERPO JSON (Con el formato híbrido para evitar el error)
     const payload = {
-      model: "command", 
+      model: "command-light", 
       messages: [ 
         { 
           role: "USER", 
