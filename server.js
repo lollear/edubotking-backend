@@ -46,7 +46,7 @@ app.post("/summary", async (req, res) => {
       
     // 1. DEFINIMOS EL CUERPO JSON (Híbrido: Chat moderno + campo 'message' antiguo)
     const payload = {
-      model: "command", // <--- ¡USAMOS EL MODELO MÁS RECIENTE!
+      model: "command-a-03-2025", // <--- ¡USAMOS EL MODELO MÁS RECIENTE!
       messages: [ 
         { 
           role: "USER", 
