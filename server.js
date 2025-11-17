@@ -1,4 +1,4 @@
-// server.js (Último y Definitivo Intento con el endpoint /v1/chat)
+// server.js (Último y Definitivo Intento con FETCH y formato JSON híbrido)
 
 import express from "express";
 import cors from "cors";
@@ -6,18 +6,22 @@ import bodyParser from "body-parser";
 
 // ----------------------------------------------------
 // URL del endpoint de CHAT de Cohere
-const COHERE_API_URL = "https://api.cohere.ai/v1/chat"; // <--- ¡Volvemos a CHAT!
+const COHERE_API_URL = "https://api.cohere.ai/v1/chat"; 
 // ----------------------------------------------------
 
 // 1. Get the API Key from environment variables.
 const COHERE_KEY = process.env.COHERE_API_KEY || process.env.CO_API_KEY;
 
+// Fail fast if the key is not available
 if (!COHERE_KEY) {
-    console.error("FATAL ERROR: API Key is missing.");
+    console.error("FATAL ERROR: API Key is missing. Please set either COHERE_API_KEY or CO_API_KEY in Render.");
     process.exit(1); 
 }
 
+// Initialize the Express application
 const app = express();
+
+// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -28,7 +32,7 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "EdubotKing Backend Running 🚀" });
 });
 
-// --- Summary Endpoint (USANDO FETCH Y CHAT CON FORMATO ANTIGUO) ---
+// --- Summary Endpoint (USANDO FETCH CON FORMATO HÍBRIDO) ---
 app.post("/summary", async (req, res) => {
   try {
     const { text } = req.body;
@@ -36,20 +40,22 @@ app.post("/summary", async (req, res) => {
     if (!text || text.trim() === "") {
       return res.status(400).json({ summary: "Error: No text provided." });
     }
+    
+    // El prompt de texto
+    const userPrompt = `Summarize the following text in Spanish:\n\n${text}`;
 
-    // 1. DEFINIMOS EL CUERPO JSON (Con la sintaxis que el error "message" pide)
+    // 1. DEFINIMOS EL CUERPO JSON (Con el formato híbrido para evitar el error)
     const payload = {
-      model: "command", // Modelo estable
+      model: "command", 
       messages: [ 
         { 
           role: "USER", 
-          // ¡USAMOS 'message' porque es lo que el error siempre ha pedido!
-          message: `Summarize the following text in Spanish:\n\n${text}` 
+          // Campo 1: Para la estructura del array de chat
+          message: userPrompt 
         } 
       ],
-      // Forzamos el uso de la propiedad "message" en el objeto principal, 
-      // si el endpoint es muy antiguo y lo requiere
-      // message: `Summarize the following text in Spanish:\n\n${text}`, 
+      // Campo 2: Para el error específico que la API está devolviendo
+      message: userPrompt // <-- ¡Añadido para satisfacer el error persistente!
     };
     
     // 2. HACEMOS LA SOLICITUD FETCH
@@ -87,6 +93,11 @@ app.post("/summary", async (req, res) => {
   }
 });
 
+// --- Server Start ---
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
 // --- Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
