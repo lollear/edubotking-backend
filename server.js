@@ -43,21 +43,19 @@ app.post("/summary", async (req, res) => {
     
     // El prompt de texto
     const userPrompt = `Summarize the following text in Spanish:\n\n${text}`;
-
-    // 1. DEFINIMOS EL CUERPO JSON (Con el formato híbrido para evitar el error)
+      
+    // 1. DEFINIMOS EL CUERPO JSON (Híbrido: Chat moderno + campo 'message' antiguo)
     const payload = {
-      model: "command-light", 
+      model: "command-r", // <--- ¡USAMOS EL MODELO MÁS RECIENTE!
       messages: [ 
         { 
           role: "USER", 
-          // Campo 1: Para la estructura del array de chat
           message: userPrompt 
         } 
       ],
-      // Campo 2: Para el error específico que la API está devolviendo
-      message: userPrompt // <-- ¡Añadido para satisfacer el error persistente!
+      message: userPrompt // <-- El campo redundante que arregló el error de formato
     };
-    
+// ...
     // 2. HACEMOS LA SOLICITUD FETCH
     const fetchResponse = await fetch(COHERE_API_URL, {
       method: 'POST',
