@@ -1,1 +1,6 @@
-
+fastapi
+uvicorn
+python-multipart
+pypdf
+requests
+pydantic
